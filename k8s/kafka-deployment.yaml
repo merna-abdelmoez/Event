@@ -31,6 +31,10 @@ spec:
           image: confluentinc/cp-kafka:latest
           ports:
             - containerPort: 9092
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
           env:
             - name: KAFKA_KRAFT_MODE
               value: "true"
