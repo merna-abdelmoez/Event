@@ -29,10 +29,10 @@ spec:
           requests:
             cpu: "250m"
             memory: "256Mi"
-          env:
-            - name: ALLOW_ANONYMOUS_LOGIN
-              value: "yes"
-          ports:
-            - containerPort: 2181
+      env:
+        - name: ALLOW_ANONYMOUS_LOGIN
+          value: "yes"
+      ports:
+        - containerPort: 2181
 
 ---
