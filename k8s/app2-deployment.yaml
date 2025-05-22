@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app2
-          image: app2:latest
+          image: mernaezzat/app2:latest
           ports:
             - containerPort: 8080
           env:
