@@ -17,6 +17,11 @@ spec:
         image: mernaezzat/app2:latest
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+
         env:
         - name: PORT
           value: "8080"
