@@ -38,13 +38,11 @@ spec:
           ports:
             - containerPort: 9092
             - containerPort: 9093
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"          
           env:
             - name: KAFKA_KRAFT_MODE
               value: "true"
+            - name: KAFKA_CLUSTER_ID
+              value: "9e11cb52-3378-4795-981b-32bd05e4ee0b"
             - name: KAFKA_PROCESS_ROLES
               value: "broker,controller"
             - name: KAFKA_NODE_ID
