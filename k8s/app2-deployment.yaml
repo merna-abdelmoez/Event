@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: app2
-        image: gcr.io/<your-project-id>/app2:latest
+        image: mernaezzat/app2:latest
         ports:
         - containerPort: 8080
         env:
