@@ -6,9 +6,15 @@ spec:
   selector:
     app: kafka
   ports:
-    - protocol: TCP
+    - name: kafka
+      protocol: TCP
       port: 9092
       targetPort: 9092
+    - name: controller
+      protocol: TCP
+      port: 9093
+      targetPort: 9093
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -31,10 +37,11 @@ spec:
           image: confluentinc/cp-kafka:latest
           ports:
             - containerPort: 9092
+            - containerPort: 9093
           resources:
             requests:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "250m"
+              memory: "256Mi"          
           env:
             - name: KAFKA_KRAFT_MODE
               value: "true"
@@ -42,16 +49,20 @@ spec:
               value: "broker,controller"
             - name: KAFKA_NODE_ID
               value: "1"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "1@localhost:9093"
+              value: "1@$(POD_IP):9093"
             - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+              value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka:9092"
+              value: "PLAINTEXT://$(POD_IP):9092"
             - name: KAFKA_LOG_DIRS
               value: "/var/lib/kafka/data"
           volumeMounts:
