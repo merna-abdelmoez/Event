@@ -14,6 +14,7 @@ kind: Deployment
 metadata:
   name: kafka
 spec:
+  serviceName: kafka
   replicas: 1
   selector:
     matchLabels:
@@ -23,33 +24,37 @@ spec:
       labels:
         app: kafka
     spec:
-      initContainers:
-      - name: wait-for-zookeeper
-        image: busybox:1.34
-        command:
-          [
-            "sh", "-c",
-            "until nc -z zookeeper 2181; do echo waiting for zookeeper; sleep 60; done"
-          ]
+      hostname: "kafka"
+      subdomain: "kafka"
       containers:
-      - name: kafka
-        image: wurstmeister/kafka:latest
-        ports:
-          - containerPort: 9092
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-        env:
-          - name: KAFKA_ZOOKEEPER_CONNECT
-            value: "zookeeper:2181"
-          - name: KAFKA_LISTENERS
-            value: "PLAINTEXT://0.0.0.0:9092"
-          - name: KAFKA_ADVERTISED_LISTENERS
-            value: "PLAINTEXT://kafka:9092"
-          - name: ALLOW_PLAINTEXT_LISTENER
-            value: "yes"
-          - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-            value: "PLAINTEXT:PLAINTEXT"
-          - name: KAFKA_INTER_BROKER_LISTENER_NAME
-            value: "PLAINTEXT"
+        - name: kafka
+          image: confluentinc/cp-kafka:7.0.1
+          env:
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper:2181"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+          command:
+            - sh
+            - -c
+            - |
+              export POD_INDEX=$(hostname | awk -F '-' '{print $2}')
+              export KAFKA_BROKER_ID=$POD_INDEX
+              export KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://kafka-$POD_INDEX.kafka.default.svc.cluster.local:9092"
+              echo "broker.id=$KAFKA_BROKER_ID" >> /etc/kafka/server.properties
+              echo "advertised.listeners=$KAFKA_ADVERTISED_LISTENERS" >> /etc/kafka/server.properties
+              exec /etc/confluent/docker/run
+          ports:
+            - containerPort: 9092
+              name: client
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+      volumes:
+        - name: data
+          emptyDir: {}
