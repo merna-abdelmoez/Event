@@ -1,3 +1,4 @@
+# app1-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,31 +14,25 @@ spec:
         app: app1
     spec:
       containers:
-      - name: app1
-        image: mernaezzat/app1:latest
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-
-        env:
-        - name: PORT
-          value: "8080"
-        - name: KAFKA_BOOTSTRAP_SERVERS
-          value: "kafka:9092"
-        - name: KAFKA_TOPIC
-          value: "activity-logs"
+        - name: app1
+          image: app1:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: KAFKA_TOPIC
+              value: "activity-logs"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: app1
 spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
   selector:
     app: app1
-  ports:
-  - port: 8080
-    targetPort: 8080
-  type: LoadBalancer
